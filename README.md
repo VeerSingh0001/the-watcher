@@ -1,2 +1,2 @@
-# the-watcher
+# The Watcher
 A guardian for your network.
