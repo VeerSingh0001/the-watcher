@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{% block title %}NIDS Dashboard{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <h1>Network Intrusion Detection System</h1>
+      <h1>Network Intrusion Detection System</h1>
     </header>
     <nav>
-        <!-- Navigation links can be added here -->
+      <!-- Navigation links can be added here -->
     </nav>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <main>{% block content %}{% endblock %}</main>
     <footer>
-        <p>&copy; 2025 NIDS Project</p>
+      <p>&copy; 2025 NIDS Project</p>
     </footer>
-</body>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
 </html>
