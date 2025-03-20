@@ -1,37 +1,34 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
+content %}
+<h2>Dashboard</h2>
+<button id="start-monitoring">Start Monitoring</button>
+<button id="clear-logs">Clear Logs</button>
+<h3>Packet Logs</h3>
+<div id="logs-container">
+  <pre id="logs"></pre>
+</div>
+<script>
+  $(document).ready(function () {
+    // Start monitoring on button click
+    $('#start-monitoring').click(function () {
+      $.post('/start', function (data) {
+        alert('Sniffing started on default interface')
+      })
+    })
 
-{% block title %}Dashboard{% endblock %}
+    // Clear logs on button click
+    $('#clear-logs').click(function () {
+      $.post('/clear_logs', function (data) {
+        $('#logs').text('')
+      })
+    })
 
-{% block content %}
-    <h2>Dashboard</h2>
-    <button id="start-monitoring">Start Monitoring</button>
-    <button id="clear-logs">Clear Logs</button>
-    <h3>Packet Logs</h3>
-    <div id="logs-container">
-        <pre id="logs"></pre>
-    </div>
-    <script>
-    $(document).ready(function() {
-        // Start monitoring on button click
-        $("#start-monitoring").click(function() {
-            $.post("/start", function(data) {
-                alert("Sniffing started on default interface");
-            });
-        });
-
-        // Clear logs on button click
-        $("#clear-logs").click(function() {
-            $.post("/clear_logs", function(data) {
-                $("#logs").text("");
-            });
-        });
-
-        // Poll for logs every 2 seconds
-        setInterval(function() {
-            $.get("/logs", function(data) {
-                $("#logs").text(data.logs.join("\n"));
-            });
-        }, 2000);
-    });
-    </script>
+    // Poll for logs every 2 seconds
+    setInterval(function () {
+      $.get('/logs', function (data) {
+        $('#logs').text(data.logs.join('\n'))
+      })
+    }, 2000)
+  })
+</script>
 {% endblock %}
