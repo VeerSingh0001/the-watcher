@@ -2,3 +2,5 @@ Flask
 scapy
 flask-wtf
 netifaces
+python-dotenv
+flask-socketio
