@@ -41,22 +41,6 @@ def get_default_interface():
 def handle_received_packet(packet):
     # Emit packet summary via WebSocket
     try:
-
-        # log_data = {
-        # "timestamp": packet.time,  # Captured packet timestamp
-        # "src_ip": packet[0].src if packet.haslayer('IP') else None,
-        # "dest_ip": packet[0].dst if packet.haslayer('IP') else None,
-        # "src_port": packet[0].sport if packet.haslayer('TCP') or packet.haslayer('UDP') else None,
-        # "dest_port": packet[0].dport if packet.haslayer('TCP') or packet.haslayer('UDP') else None,
-        # "protocol": packet[0].proto if packet.haslayer('IP') else None,
-        # "packet_size": len(packet),
-        # "tcp_flags": packet[0].flags if packet.haslayer('TCP') else None,
-        # "event_type": "Normal"  # You can set this dynamically based on packet analysis
-        # }
-
-
-        # logger.info("Captured network packet", extra=log_data)  # Structured logging
-
         result = packet.json()
         data = json.loads(result)
         print(data)
