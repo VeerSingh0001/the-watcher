@@ -5,6 +5,10 @@ from scapy.all import sniff
 import os
 import threading
 import netifaces
+import json
+import logging
+from pythonjsonlogger import jsonlogger
+
 
 # Load environment variables
 load_dotenv()
@@ -13,6 +17,18 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 socketio = SocketIO(app, cors_allowed_origins='*')
+
+
+# Setup JSON logging
+logger = logging.getLogger("IDS-Logger")
+logger.setLevel(logging.INFO)
+
+log_handler = logging.FileHandler("network_logs.json")  # Store logs in a file
+formatter = jsonlogger.JsonFormatter('%(timestamp)s %(src_ip)s %(dest_ip)s %(src_port)s %(dest_port)s %(protocol)s %(packet_size)s %(tcp_flags)s %(event_type)s')
+log_handler.setFormatter(formatter)
+logger.addHandler(log_handler)
+
+
 
 def get_default_interface():
     # Get default network interface
@@ -24,6 +40,48 @@ def get_default_interface():
 
 def handle_received_packet(packet):
     # Emit packet summary via WebSocket
+    try:
+
+        # log_data = {
+        # "timestamp": packet.time,  # Captured packet timestamp
+        # "src_ip": packet[0].src if packet.haslayer('IP') else None,
+        # "dest_ip": packet[0].dst if packet.haslayer('IP') else None,
+        # "src_port": packet[0].sport if packet.haslayer('TCP') or packet.haslayer('UDP') else None,
+        # "dest_port": packet[0].dport if packet.haslayer('TCP') or packet.haslayer('UDP') else None,
+        # "protocol": packet[0].proto if packet.haslayer('IP') else None,
+        # "packet_size": len(packet),
+        # "tcp_flags": packet[0].flags if packet.haslayer('TCP') else None,
+        # "event_type": "Normal"  # You can set this dynamically based on packet analysis
+        # }
+
+
+        # logger.info("Captured network packet", extra=log_data)  # Structured logging
+
+        result = packet.json()
+        data = json.loads(result)
+        print(data)
+        # Use .get() to avoid key errors and fix typos if keys are missing
+        payload = data.get("payload", {})
+        packet_info = {
+            "src_ip": payload.get("src"),
+            "src_mac": data.get("src"),
+            "src_port": payload.get("payload", {}).get("sport"),
+            "dest_ip": payload.get("dst"),
+            "dest_mac": data.get("dst"),
+            "dest_port": payload.get("payload", {}).get("dport"),
+            "protocol": payload.get("proto"),
+            "length": payload.get("len"),
+            "timestamp": payload.get("Timestamp"),  # Fixed typo from "payoad"
+            "tcp_flags": payload.get("flags"),
+            "options": payload.get("options"),
+            "event_type": data.get("type"),
+        }
+        logger.info("Captured packet", extra=packet_info)
+        # print(packet_info)
+
+    except Exception as e:
+        logger.error(f"Error processing packet: {e}")
+
     socketio.emit('packet:received', packet.summary())
 
 def start_sniffing(interface=None):
