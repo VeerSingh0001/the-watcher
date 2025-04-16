@@ -8,6 +8,7 @@ import netifaces
 import json
 import logging
 from pythonjsonlogger import jsonlogger
+from ids import process_packet_with_rules  # Import the helper function
 
 
 # Load environment variables
@@ -38,12 +39,25 @@ def get_default_interface():
         return default_gateway[netifaces.AF_INET][1]
     return None
 
+def anomoly_detected(packet_info):
+    # Process packet with idstools
+    anomaly_detected = process_packet_with_rules(packet_info)
+    if anomaly_detected:
+        logger.warning("Anomaly detected in packet", extra=packet_info)
+
+def get_protocol_name(packet):
+    if packet.haslayer(IP):
+        proto_num = packet[IP].proto  # Extract protocol number
+        protocol_mapping = {6: "TCP", 17: "UDP", 1: "ICMP"}  # Common protocol mappings
+        return protocol_mapping.get(proto_num, f"Protocol-{proto_num}")  # Use mapping or return protocol number
+
 def handle_received_packet(packet):
-    # Emit packet summary via WebSocket
     try:
+        print(packet.summary())
+        # Extract packet data
         result = packet.json()
         data = json.loads(result)
-        print(data)
+        # print(data)
         # Use .get() to avoid key errors and fix typos if keys are missing
         payload = data.get("payload", {})
         packet_info = {
@@ -53,15 +67,18 @@ def handle_received_packet(packet):
             "dest_ip": payload.get("dst"),
             "dest_mac": data.get("dst"),
             "dest_port": payload.get("payload", {}).get("dport"),
-            "protocol": payload.get("proto"),
+            "protocol": get_protocol_name(packet),
             "length": payload.get("len"),
             "timestamp": payload.get("Timestamp"),  # Fixed typo from "payoad"
             "tcp_flags": payload.get("flags"),
             "options": payload.get("options"),
-            "event_type": data.get("type"),
+            "event_type": data.get("type")
         }
         logger.info("Captured packet", extra=packet_info)
-        # print(packet_info)
+
+        anomaly_thread = threading.Thread(target=anomoly_detected, args=(packet_info,), daemon=True)
+        # anomaly_thread.start()
+        
 
     except Exception as e:
         logger.error(f"Error processing packet: {e}")
