@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8"/>
     <title>{% block title %}NIDS Dashboard{% endblock %}</title>
     <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles.css') }}"
+            href="{{ url_for('static', filename='styles.css') }}"
+            rel="stylesheet"
     />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  </head>
-  <body>
-    <header>
-      <h1>Network Intrusion Detection System</h1>
-    </header>
-    <nav>
-      <!-- Navigation links can be added here -->
-    </nav>
-    <main>{% block content %}{% endblock %}</main>
-    <footer>
-      <p>&copy; 2025 NIDS Project</p>
-    </footer>
+</head>
+<body>
+<header>
+    <h1>Network Intrusion Detection System</h1>
+</header>
+<nav>
+    <!-- Navigation links can be added here -->
+</nav>
+<main>{% block content %}{% endblock %}</main>
+<footer>
+    <p>&copy; 2025 NIDS Project</p>
+</footer>
 
-    <script
-      src="https://cdn.socket.io/4.8.1/socket.io.min.js"
-      integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+"
-      crossorigin="anonymous"
-    ></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-  </body>
+<script
+        crossorigin="anonymous"
+        integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+"
+        src="https://cdn.socket.io/4.8.1/socket.io.min.js"
+></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
 </html>

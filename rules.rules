@@ -4019,3 +4019,5 @@ alert ip any any -> any any (msg:"test alert"; sid:1000001; rev:1;)
 
 # Generic rule to match all traffic for logs in network_logs.json
 alert ip any any -> any any (msg:"Generic rule to match all traffic"; sid:2000001; rev:1;)
+
+alert ip any any -> any any (msg:"Every packet matched"; sid:1000001; rev:1;)

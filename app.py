@@ -1,15 +1,11 @@
-from flask import Flask, render_template
-from dotenv import load_dotenv
-from flask_socketio import SocketIO
-from scapy.all import sniff
 import os
 import threading
-import netifaces
-import json
-import logging
-from pythonjsonlogger import jsonlogger
-from ids import process_packet_with_rules  # Import the helper function
 
+import netifaces
+from dotenv import load_dotenv
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+from scapy.all import sniff
 
 # Load environment variables
 load_dotenv()
@@ -20,17 +16,6 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 
-# Setup JSON logging
-logger = logging.getLogger("IDS-Logger")
-logger.setLevel(logging.INFO)
-
-log_handler = logging.FileHandler("network_logs.json")  # Store logs in a file
-formatter = jsonlogger.JsonFormatter('%(timestamp)s %(src_ip)s %(dest_ip)s %(src_port)s %(dest_port)s %(protocol)s %(packet_size)s %(tcp_flags)s %(event_type)s')
-log_handler.setFormatter(formatter)
-logger.addHandler(log_handler)
-
-
-
 def get_default_interface():
     # Get default network interface
     gateways = netifaces.gateways()
@@ -39,51 +24,10 @@ def get_default_interface():
         return default_gateway[netifaces.AF_INET][1]
     return None
 
-def anomoly_detected(packet_info):
-    # Process packet with idstools
-    anomaly_detected = process_packet_with_rules(packet_info)
-    if anomaly_detected:
-        logger.warning("Anomaly detected in packet", extra=packet_info)
-
-def get_protocol_name(packet):
-    if packet.haslayer(IP):
-        proto_num = packet[IP].proto  # Extract protocol number
-        protocol_mapping = {6: "TCP", 17: "UDP", 1: "ICMP"}  # Common protocol mappings
-        return protocol_mapping.get(proto_num, f"Protocol-{proto_num}")  # Use mapping or return protocol number
 
 def handle_received_packet(packet):
-    try:
-        print(packet.summary())
-        # Extract packet data
-        result = packet.json()
-        data = json.loads(result)
-        # print(data)
-        # Use .get() to avoid key errors and fix typos if keys are missing
-        payload = data.get("payload", {})
-        packet_info = {
-            "src_ip": payload.get("src"),
-            "src_mac": data.get("src"),
-            "src_port": payload.get("payload", {}).get("sport"),
-            "dest_ip": payload.get("dst"),
-            "dest_mac": data.get("dst"),
-            "dest_port": payload.get("payload", {}).get("dport"),
-            "protocol": get_protocol_name(packet),
-            "length": payload.get("len"),
-            "timestamp": payload.get("Timestamp"),  # Fixed typo from "payoad"
-            "tcp_flags": payload.get("flags"),
-            "options": payload.get("options"),
-            "event_type": data.get("type")
-        }
-        logger.info("Captured packet", extra=packet_info)
-
-        anomaly_thread = threading.Thread(target=anomoly_detected, args=(packet_info,), daemon=True)
-        # anomaly_thread.start()
-        
-
-    except Exception as e:
-        logger.error(f"Error processing packet: {e}")
-
     socketio.emit('packet:received', packet.summary())
+
 
 def start_sniffing(interface=None):
     # Start packet sniffing
@@ -95,10 +39,12 @@ def start_sniffing(interface=None):
     print(f"[INFO] Capturing packets on: {interface}")
     sniff(iface=interface, prn=handle_received_packet, store=False)
 
+
 @app.route('/')
 def index():
-    # Render main page
+    # Render the main page
     return render_template('index.html')
+
 
 @socketio.on('connect')
 def handle_connect():
@@ -107,6 +53,8 @@ def handle_connect():
     sniff_thread = threading.Thread(target=start_sniffing, daemon=True)
     sniff_thread.start()
 
+
 if __name__ == '__main__':
     # Run Flask app
+
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
