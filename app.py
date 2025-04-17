@@ -1,4 +1,7 @@
+import atexit
 import os
+import signal
+import sys
 import threading
 
 import netifaces
@@ -6,6 +9,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from scapy.all import sniff
+
+from ids import run_suricata_live, stop_suricata_live, tail_alerts
 
 # Load environment variables
 load_dotenv()
@@ -52,7 +57,33 @@ def handle_connect():
     print('[INFO] Client connected')
     sniff_thread = threading.Thread(target=start_sniffing, daemon=True)
     sniff_thread.start()
+    run_ids = threading.Thread(target=run_suricata_live, daemon=True)
+    run_ids.start()
+    tail_alert = threading.Thread(target=tail_alerts, daemon=True)
+    tail_alert.start()
+    print(tail_alert)
 
+
+# Function to print something on exit
+def on_exit():
+    print("Flask app is closing...")
+    stop_suricata_live()
+
+
+# Register the exit function using atexit.
+atexit.register(on_exit)
+
+
+# Alternatively, handle termination signals:
+def signal_handler(sig, frame):
+    print("Signal received, closing Flask app...")
+    stop_suricata_live()
+    sys.exit(0)  # Exiting will trigger the atexit functions
+
+
+# Register the signal handlers for SIGINT and SIGTERM.
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 if __name__ == '__main__':
     # Run Flask app
