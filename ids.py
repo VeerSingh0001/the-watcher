@@ -49,7 +49,7 @@ def tail_alerts(log_file="/var/log/suricata/eve.json"):
                 continue
             try:
                 alert = json.loads(line)
-                if alert.get("event_type") == "stats":
+                if alert.get("event_type") == "alerts":
                     print("Live Suricata Alert:", alert)
                     db.insert_alert(alert)
                     db.get_alerts()
