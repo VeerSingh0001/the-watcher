@@ -1,0 +1,9 @@
+sudo apt install suricata
+sudo cp emergin.rules /var/lib/suricata/rules/suricata.rules
+sudo touch /var/log/suricata/eve.json
+
+echo "$(whoami) ALL=(ALL) NOPASSWD: $(pwd)/the-watcher.sh" | sudo tee /etc/sudoers.d/the-watcher
+sudo chmod 0440 /etc/sudoers.d/the-watcher
+
+echo "$(whoami) ALL=(ALL) NOPASSWD: $(pwd)/stop-watcher/" | sudo tee /etc/sudoers.d/stop-watcher
+sudo chmod 0440 /etc/sudoers.d/stop-watcher

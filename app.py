@@ -12,12 +12,13 @@ from scapy.all import sniff
 
 from ids import run_suricata_live, stop_suricata_live, tail_alerts
 
+
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
+# app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 
@@ -61,13 +62,14 @@ def handle_connect():
     run_ids.start()
     tail_alert = threading.Thread(target=tail_alerts, daemon=True)
     tail_alert.start()
-    print(tail_alert)
 
 
 # Function to print something on exit
 def on_exit():
     print("Flask app is closing...")
     stop_suricata_live()
+    # db.conn.close()
+    # db.cursor.close()
 
 
 # Register the exit function using atexit.
@@ -78,6 +80,8 @@ atexit.register(on_exit)
 def signal_handler(sig, frame):
     print("Signal received, closing Flask app...")
     stop_suricata_live()
+    # db.conn.close()
+    # db.cursor.close()
     sys.exit(0)  # Exiting will trigger the atexit functions
 
 
@@ -87,5 +91,6 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 if __name__ == '__main__':
     # Run Flask app
-
+    # db = DATABASE()
+    # db.create_conn()
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
