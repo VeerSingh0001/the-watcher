@@ -60,7 +60,6 @@ class DATABASE:
 );
 """)
 
-
         self.conn.commit()
 
     def insert_alert(self, alert):
@@ -201,75 +200,12 @@ class DATABASE:
 
     def get_alerts(self):
         # Retrieve all alerts from the database.
-        self.cursor.execute("SELECT * FROM alerts")
-        rows = self.cursor.fetchall()
-        column_names = [desc[0] for desc in self.cursor.description]
-        for row in rows:
-            for col_name, value in zip(column_names, row):
-                print(f"{col_name}: {value}")
-            print("-" *40)  # Separator between rows
-
-
-# alertt = {
-#   "timestamp": "2025-04-17T16:31:06.639318+0530",
-#   "flow_id": 775525417411358,
-#   "in_iface": "wlan0",
-#   "event_type": "alert",
-#   "src_ip": "192.168.159.208",
-#   "src_port": 57621,
-#   "dest_ip": "192.168.159.255",
-#   "dest_port": 57621,
-#   "proto": "UDP",
-#   "pkt_src": "wire/pcap",
-#   "alert": {
-# 	"action": "allowed",
-# 	"gid": 1,
-# 	"signature_id": 2027397,
-# 	"rev": 1,
-# 	"signature": "ET INFO Spotify P2P Client",
-# 	"category": "Not Suspicious Traffic",
-# 	"severity": 3,
-# 	"metadata": {
-# 	  "affected_product": ["Windows_Client_Apps"],
-# 	  "attack_target": ["Client_Endpoint"],
-# 	  "confidence": ["High"],
-# 	  "created_at": ["2019_05_30"],
-# 	  "deployment": ["Internal"],
-# 	  "performance_impact": ["Low"],
-# 	  "signature_severity": ["Minor"],
-# 	  "updated_at": ["2019_07_26"]
-# 	}
-#   },
-#   "app_proto": "failed",
-#   "direction": "to_server",
-#   "flow": {
-# 	"pkts_toserver": 1,
-# 	"pkts_toclient": 0,
-# 	"bytes_toserver": 86,
-# 	"bytes_toclient": 0,
-# 	"start": "2025-04-17T16:31:06.639318+0530",
-# 	"src_ip": "192.168.159.208",
-# 	"dest_ip": "192.168.159.255",
-# 	"src_port": 57621,
-# 	"dest_port": 57621
-#   }
-# }
-#
-#
-# db = DATABASE()
-# db.create_conn()
-# # db.insert_alert(alertt)
-# db.get_alerts()
-
-
-
-
+        self.cursor.execute("SELECT * FROM alerts ORDER BY id DESC LIMIT 1;")
+        rows = self.cursor.fetchone()
+        print(rows)
+        self.conn.close()
+        # column_names = [desc[0] for desc in self.cursor.description]
         # for row in rows:
-        #     alert_id = row[0]
-        #     alert_data_str = row[1]
-        #     # Convert the JSON text back to a Python dictionary.
-        #     alert_data = json.loads(alert_data_str)
-        #     print(f"Alert ID: {alert_id}")
-        #     print("Alert Data:", alert_data, type(alert_data))
-
-
+        #     for col_name, value in zip(column_names, row):
+        #         print(f"{col_name}: {value}")
+        #     print("-" *40)  # Separator between rows

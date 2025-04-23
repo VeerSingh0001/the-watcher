@@ -1,5 +1,4 @@
 import atexit
-import os
 import signal
 import sys
 import threading
@@ -11,7 +10,6 @@ from flask_socketio import SocketIO
 from scapy.all import sniff
 
 from ids import run_suricata_live, stop_suricata_live, tail_alerts
-
 
 # Load environment variables
 load_dotenv()
@@ -72,7 +70,7 @@ def on_exit():
     # db.cursor.close()
 
 
-# Register the exit function using atexit.
+# Register the exit function using at exit.
 atexit.register(on_exit)
 
 
@@ -82,7 +80,7 @@ def signal_handler(sig, frame):
     stop_suricata_live()
     # db.conn.close()
     # db.cursor.close()
-    sys.exit(0)  # Exiting will trigger the atexit functions
+    sys.exit(0)  # Exiting will trigger the at exit functions
 
 
 # Register the signal handlers for SIGINT and SIGTERM.

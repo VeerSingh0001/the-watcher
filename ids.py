@@ -1,7 +1,8 @@
 import json
 import subprocess
 import time
-from databse import  DATABASE
+
+from databse import DATABASE
 
 
 def run_suricata_live():
@@ -38,10 +39,8 @@ def stop_suricata_live():
 
 
 def tail_alerts(log_file="/var/log/suricata/eve.json"):
-    db = DATABASE()
-    db.create_conn()
     with open(log_file, "r") as f:
-        f.seek(0,2)
+        f.seek(0, 2)
         while True:
             line = f.readline()
             if not line:
@@ -49,13 +48,17 @@ def tail_alerts(log_file="/var/log/suricata/eve.json"):
                 continue
             try:
                 alert = json.loads(line)
-                if alert.get("event_type") == "alerts":
+                if alert.get("event_type") == "alert":
                     print("Live Suricata Alert:", alert)
+                    db = DATABASE()
+                    db.create_conn()
                     db.insert_alert(alert)
                     db.get_alerts()
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                print(e)
                 continue
 
 # threading.Thread(target=run_suricata_live, daemon=True).start()
-#
+
 # threading.Thread(target=tail_alerts, daemon=True).start()
+# tail_alerts()
