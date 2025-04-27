@@ -39,6 +39,7 @@ def stop_suricata_live():
 
 
 def tail_alerts(log_file="/var/log/suricata/eve.json"):
+    db = DATABASE()
     with open(log_file, "r") as f:
         f.seek(0, 2)
         while True:
@@ -47,13 +48,18 @@ def tail_alerts(log_file="/var/log/suricata/eve.json"):
                 time.sleep(1)
                 continue
             try:
-                alert = json.loads(line)
-                if alert.get("event_type") == "alert":
-                    print("Live Suricata Alert:", alert)
-                    db = DATABASE()
-                    db.create_conn()
-                    db.insert_alert(alert)
-                    db.get_alerts()
+                log = json.loads(line)
+                if log.get("event_type") == "alert":
+                    print("Live Suricata Alert:", log)
+                    db.create_alert_conn()
+                    db.insert_alert(log)
+                    # db.get_alerts()
+                elif log.get("event_type") == "stats":
+                    db.create_stat_conn()
+                    db.insert_stat(log)
+                elif log.get("event_type") == "flow":
+                    db.create_flow_conn()
+                    db.insert_flow(log)
             except json.JSONDecodeError as e:
                 print(e)
                 continue
