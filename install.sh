@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+
 sudo apt install suricata
 sudo cp "${pwd}/rules/rules.rules" /var/lib/suricata/rules/suricata.rules
 sudo touch /var/log/suricata/eve.json

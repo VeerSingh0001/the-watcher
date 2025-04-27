@@ -8,7 +8,7 @@ from databse import DATABASE
 def run_suricata_live():
     # Start the process and get a handle to it
     suricata_proc = subprocess.Popen(
-        ['sudo', './the-watcher.sh'],
+        ['sudo', './start-watcher.sh'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
