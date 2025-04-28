@@ -279,6 +279,7 @@ class DATABASE:
             :bytes_toclient, :flow_start, :flow_end, :flow_age, :flow_state, :flow_reason, :flow_alerted
         );
         """
+        # print(insert_query)
 
         self.conn.commit()
 
@@ -1315,5 +1316,6 @@ class DATABASE:
                   str(stat["stats"]["ftp"]["memuse"]), str(stat["stats"]["ftp"]["memcap"]), str(stat["stats"]["file_store"]["open_files"])]
 
         insert_query = f"INSERT INTO stats ({', '.join(column_names)}) VALUES ({', '.join(values)});"
+        # print(insert_query)
         self.cursor.execute(insert_query)
         self.conn.commit()
