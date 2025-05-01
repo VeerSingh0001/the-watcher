@@ -5,7 +5,7 @@ import sqlite3
 class DATABASE:
 
     def __init__(self):
-        self.conn = sqlite3.connect("logs.db")
+        self.conn = sqlite3.connect("logs.db", check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.create_alert_conn()
         self.create_flow_conn()
@@ -64,56 +64,66 @@ class DATABASE:
         self.conn.commit()
 
     def insert_alert(self, alert):
-        timestamp = alert["timestamp"]
-        flow_id = alert["flow_id"]
-        in_iface = alert["in_iface"]
-        event_type = alert["event_type"]
-        src_ip = alert["src_ip"]
-        src_port = alert["src_port"]
-        dest_ip = alert["dest_ip"]
-        dest_port = alert["dest_port"]
-        proto = alert["proto"]
-        pkt_src = alert["pkt_src"]
+        timestamp = alert.get("timestamp", None)
+        flow_id = alert.get("flow_id", None)
+        in_iface = alert.get("in_iface", None)
+        event_type = alert.get("event_type", None)
+        src_ip = alert.get("src_ip", None)
+        src_port = alert.get("src_port", None)
+        dest_ip = alert.get("dest_ip", None)
+        dest_port = alert.get("dest_port", None)
+        proto = alert.get("proto", None)
+        pkt_src = alert.get("pkt_src", None)
 
         # Flattened alert properties
-        alert_action = alert["alert"]["action"]
-        alert_gid = alert["alert"]["gid"]
-        alert_signature_id = alert["alert"]["signature_id"]
-        alert_rev = alert["alert"]["rev"]
-        alert_signature = alert["alert"]["signature"]
-        alert_category = alert["alert"]["category"]
-        alert_severity = alert["alert"]["severity"]
+        alert_action = alert.get("alert", {}).get("action", None)
+        alert_gid = alert.get("alert", {}).get("gid", None)
+        alert_signature_id = alert.get("alert", {}).get("signature_id", None)
+        alert_rev = alert.get("alert", {}).get("rev", None)
+        alert_signature = alert.get("alert", {}).get("signature", None)
+        alert_category = alert.get("alert", {}).get("category", None)
+        alert_severity = alert.get("alert", {}).get("severity", None)
 
         # For metadata arrays, we store them as JSON strings
         metadata_affected_product = json.dumps(
-            alert["alert"]["metadata"]["affected_product"]
+            alert.get("alert", {}).get("metadata", {}).get("affected_product", None)
         )
-        metadata_attack_target = json.dumps(alert["alert"]["metadata"]["attack_target"])
-        metadata_confidence = json.dumps(alert["alert"]["metadata"]["confidence"])
-        metadata_created_at = json.dumps(alert["alert"]["metadata"]["created_at"])
-        metadata_deployment = json.dumps(alert["alert"]["metadata"]["deployment"])
+        metadata_attack_target = json.dumps(
+            alert.get("alert", {}).get("metadata", {}).get("attack_target", None)
+        )
+        metadata_confidence = json.dumps(
+            alert.get("alert", {}).get("metadata", {}).get("confidence", None)
+        )
+        metadata_created_at = json.dumps(
+            alert.get("alert", {}).get("metadata", {}).get("created_at", None)
+        )
+        metadata_deployment = json.dumps(
+            alert.get("alert", {}).get("metadata", {}).get("deployment", None)
+        )
         metadata_performance_impact = json.dumps(
-            alert["alert"]["metadata"]["performance_impact"]
+            alert.get("alert", {}).get("metadata", {}).get("performance_impact", None)
         )
         metadata_signature_severity = json.dumps(
-            alert["alert"]["metadata"]["signature_severity"]
+            alert.get("alert", {}).get("metadata", {}).get("signature_severity", None)
         )
-        metadata_updated_at = json.dumps(alert["alert"]["metadata"]["updated_at"])
+        metadata_updated_at = json.dumps(
+            alert.get("alert", {}).get("metadata", {}).get("updated_at", None)
+        )
 
         # Other top-level properties
-        app_proto = alert["app_proto"]
-        direction = alert["direction"]
+        app_proto = alert.get("app_proto", None)
+        direction = alert.get("direction", None)
 
         # Flattened flow properties
-        flow_pkts_toserver = alert["flow"]["pkts_toserver"]
-        flow_pkts_toclient = alert["flow"]["pkts_toclient"]
-        flow_bytes_toserver = alert["flow"]["bytes_toserver"]
-        flow_bytes_toclient = alert["flow"]["bytes_toclient"]
-        flow_start = alert["flow"]["start"]
-        flow_src_ip = alert["flow"]["src_ip"]
-        flow_dest_ip = alert["flow"]["dest_ip"]
-        flow_src_port = alert["flow"]["src_port"]
-        flow_dest_port = alert["flow"]["dest_port"]
+        flow_pkts_toserver = alert.get("flow", {}).get("pkts_toserver", None)
+        flow_pkts_toclient = alert.get("flow", {}).get("pkts_toclient", None)
+        flow_bytes_toserver = alert.get("flow", {}).get("bytes_toserver", None)
+        flow_bytes_toclient = alert.get("flow", {}).get("bytes_toclient", None)
+        flow_start = alert.get("flow", {}).get("start", None)
+        flow_src_ip = alert.get("flow", {}).get("src_ip", None)
+        flow_dest_ip = alert.get("flow", {}).get("dest_ip", None)
+        flow_src_port = alert.get("flow", {}).get("src_port", None)
+        flow_dest_port = alert.get("flow", {}).get("dest_port", None)
 
         insert_query = """
             INSERT INTO alerts (
@@ -205,17 +215,6 @@ class DATABASE:
 
         self.conn.commit()
 
-    def get_alerts(self):
-        # Retrieve all alerts from the database.
-        self.cursor.execute("SELECT * FROM alerts ORDER BY id DESC LIMIT 1;")
-        rows = self.cursor.fetchone()
-        print(rows)
-        self.conn.close()
-        # column_names = [desc[0] for desc in self.cursor.description]
-        # for row in rows:
-        #     for col_name, value in zip(column_names, row):
-        #         print(f"{col_name}: {value}")
-        #     print("-" *40)  # Separator between rows
 
     def create_flow_conn(self):
         self.cursor.execute("""
@@ -1319,3 +1318,28 @@ class DATABASE:
         # print(insert_query)
         self.cursor.execute(insert_query)
         self.conn.commit()
+
+
+    def get_dashboard_data(self):
+        alerts_query = "SELECT COUNT(*) FROM alerts"
+        self.cursor.execute(alerts_query)
+        total_alerts = self.cursor.fetchone()[0]
+        print(total_alerts)
+
+        flow_query = "SELECT COUNT(*) FROM flows"
+        self.cursor.execute(flow_query)
+        total_flows = self.cursor.fetchone()[0]
+        print(total_flows)
+
+        stats_query = "SELECT COUNT(*) FROM stats"
+        self.cursor.execute(stats_query)
+        total_stats = self.cursor.fetchone()[0]
+        print(total_stats)
+
+        total_logs = total_alerts + total_flows + total_stats
+
+        return  [total_alerts, total_flows, total_stats, total_logs]
+
+
+
+

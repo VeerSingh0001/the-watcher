@@ -5,11 +5,12 @@ import threading
 
 import netifaces
 from dotenv import load_dotenv
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO
 from scapy.all import sniff
 
 from ids import run_suricata_live, stop_suricata_live, tail_alerts
+from databse import  DATABASE
 
 # Load environment variables
 load_dotenv()
@@ -49,6 +50,11 @@ def index():
     # Render the main page
     return render_template('index.html')
 
+@app.route("/dashboard", methods=["GET"])
+def get_dash():
+    db = DATABASE()
+    logs = db.get_dashboard_data()
+    return jsonify({"status": "success", "Counts": logs}), 200
 
 @socketio.on('connect')
 def handle_connect():
