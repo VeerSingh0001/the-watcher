@@ -4,3 +4,5 @@ flask-wtf
 netifaces
 python-dotenv
 flask-socketio
+python-json-logger
+idstools
