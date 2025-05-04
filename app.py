@@ -3,9 +3,9 @@ import signal
 import sys
 import threading
 
-import netifaces
+# import netifaces
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_from_directory
 from flask_socketio import SocketIO
 from scapy.all import sniff
 
@@ -19,6 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 socketio = SocketIO(app, cors_allowed_origins='*')
+
 
 
 def get_default_interface():
@@ -44,6 +45,11 @@ def start_sniffing(interface=None):
     print(f"[INFO] Capturing packets on: {interface}")
     sniff(iface=interface, prn=handle_received_packet, store=False)
 
+
+@app.route('/<path:filename>')
+def public_files(filename):
+    print(filename)
+    return send_from_directory('public', filename)
 
 @app.route('/')
 def index():
