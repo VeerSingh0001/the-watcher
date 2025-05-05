@@ -1,7 +1,7 @@
 export default function LogTable() {
   return (
     <div className="w-full text-white">
-      <div className="overflow-x-auto rounded-lg shadow-lg">
+      <div className="overflow-x-auto m-10 rounded-lg shadow-lg">
         <div className="inline-block min-w-full">
           <div className="overflow-hidden">
             <table className="min-w-full divide-y divide-gray-700 bg-gray-800">
@@ -27,10 +27,10 @@ export default function LogTable() {
                 </tr>
               </thead>
             </table>
-            <div className="overflow-y-auto max-h-96">
+            <div className="overflow-y-auto h-140 ">
               <table className="min-w-full divide-y divide-gray-700 bg-gray-800">
                 <tbody className="divide-y divide-gray-700">
-                  {Array.from({ length: 10 }, (_, index) => (
+                  {Array.from({ length: 30 }, (_, index) => (
                     <tr key={index} className="hover:bg-gray-700">
                       <td className="px-4 py-2 whitespace-nowrap">
                         User {index + 1}
@@ -73,7 +73,7 @@ export default function LogTable() {
   );
 }
 
-function Row({
+export function Row({
   children,
   isTitle,
 }: {

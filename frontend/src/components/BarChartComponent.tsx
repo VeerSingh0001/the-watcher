@@ -1,4 +1,3 @@
-import React from "react";
 import {
   BarChart,
   Bar,
@@ -85,19 +84,21 @@ const BarChartComponent = ({
     { name: "A", value: 30 },
     { name: "B", value: 45 },
     { name: "C", value: 20 },
-    { name: "D", value: 60 },
+    { name: "D", value: 10 },
   ],
   width = "100%",
   height = 140,
   backgroundColor = "#101828",
   barColor = "#1e2939",
-  title = "Title",
-  subtitle = "subtitle",
+  title = "Network Traffic",
+  subtitle = "Active Packets Per Hour",
 }) => (
   <div style={{ width, backgroundColor, padding: "1rem" }}>
     {title && <h3 style={{ margin: 0, color: "#fff" }}>{title}</h3>}
     {subtitle && (
-      <p style={{ margin: "0 0 1rem 0", color: "#aaa" }}>{subtitle}</p>
+      <p style={{ margin: "0 0 1rem 0", color: "#aaa", fontSize: ".8rem" }}>
+        {subtitle}
+      </p>
     )}
     <div style={{ width: "100%", height }}>
       <ResponsiveContainer width="100%" height="100%">

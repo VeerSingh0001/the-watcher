@@ -1,33 +1,23 @@
-import BarChartComponent from "./components/BarChartComponent";
-import BarChart from "./components/BarChartComponent";
-import BoxPreview from "./components/BoxPreview";
+import { Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
-import LogTable from "./components/LogTable";
-import PieChartComponent from "./components/PieChartComponent";
+import Home from "./pages/Home";
+import Analytics from "./pages/Analytics";
+import { useData } from "./contexts/DataContext";
+import Loading from "./components/Loading";
 
 function App() {
+  const { isLoading } = useData();
   return (
     <div className="app">
       <Header />
-      <div className="body p-2">
-        <div className="flex">
-          <BoxPreview />
-          <BarChartComponent />
-        </div>
-        <div className="container flex gap-10">
-          <div className="charts flex-row gap-10">
-            <div className="flex gap-3">
-              <PieChartComponent />
-              <PieChartComponent />
-            </div>
-            <div className="flex gap-3">
-              <PieChartComponent />
-              <PieChartComponent />
-            </div>
-          </div>
-          <LogTable />
-        </div>
-      </div>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/analytics" element={<Analytics />} />
+        </Routes>
+      )}
     </div>
   );
 }
