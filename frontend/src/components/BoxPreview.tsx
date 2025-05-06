@@ -1,20 +1,21 @@
-import React from "react";
+import { useData } from "../contexts/DataContext";
 
 export default function BoxPreview() {
+  const { totalPackets, alerts, vaild } = useData();
   return (
-    <div className="bg-gray-900 w-fit p-2">
+    <div className="bg-gray-900 w-80 p-2">
       <div className="py-2 text-center">
-        <h4 className="font-bold text-base">Title</h4>
-        <p className="text-2xl p-2">35,33,838</p>
+        <h4 className="font-bold text-base">Total</h4>
+        <p className="text-2xl p-2">{totalPackets}</p>
       </div>
       <div className="flex">
-        <div className="py-2 w-18 h-18 bg-green-700 flex-row text-center ">
-          <h4 className="font-bold text-xs">Title</h4>
-          <p className="text-2xl p-2">838</p>
+        <div className="py-2 flex-1/2 bg-green-700 flex-row text-center ">
+          <h4 className="font-bold text-xs">Valid</h4>
+          <p className="text-2xl p-2">{vaild}</p>
         </div>
-        <div className="py-2 w-18 h-18 bg-red-700 flex-row text-center ">
-          <h4 className="font-bold text-xs">Title</h4>
-          <p className="text-2xl p-2">434</p>
+        <div className="py-2 flex-1/2 bg-red-700 flex-row text-center ">
+          <h4 className="font-bold text-xs">Alerts</h4>
+          <p className="text-2xl p-2">{alerts}</p>
         </div>
       </div>
     </div>
