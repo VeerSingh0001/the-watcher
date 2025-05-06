@@ -1,11 +1,18 @@
 import json
 import sqlite3
+import  pandas as pd
+from flask import request
+
+
+def dict_factory(cursor, row):
+    return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
 
 
 class DATABASE:
 
     def __init__(self):
         self.conn = sqlite3.connect("logs.db", check_same_thread=False)
+        self.conn.row_factory = dict_factory
         self.cursor = self.conn.cursor()
         self.create_alert_conn()
         self.create_flow_conn()
@@ -214,7 +221,6 @@ class DATABASE:
         self.cursor.execute(insert_query, params)
 
         self.conn.commit()
-
 
     def create_flow_conn(self):
         self.cursor.execute("""
@@ -1319,27 +1325,64 @@ class DATABASE:
         self.cursor.execute(insert_query)
         self.conn.commit()
 
-
     def get_dashboard_data(self):
-        alerts_query = "SELECT COUNT(*) FROM alerts"
-        self.cursor.execute(alerts_query)
-        total_alerts = self.cursor.fetchone()[0]
-        print(total_alerts)
+        alerts_query = self.cursor.execute("SELECT COUNT(*) FROM alerts")
+        total_alerts = alerts_query.fetchone()["COUNT(*)"]
+        # print(total_alerts)
 
         flow_query = "SELECT COUNT(*) FROM flows"
         self.cursor.execute(flow_query)
-        total_flows = self.cursor.fetchone()[0]
-        print(total_flows)
+        total_flows = self.cursor.fetchone()["COUNT(*)"]
+        # print(total_flows)
 
         stats_query = "SELECT COUNT(*) FROM stats"
         self.cursor.execute(stats_query)
-        total_stats = self.cursor.fetchone()[0]
-        print(total_stats)
+        total_stats = self.cursor.fetchone()["COUNT(*)"]
+        # print(total_stats)
 
-        total_logs = total_alerts + total_flows + total_stats
+        total_logs = {
+            "total": total_alerts+total_flows+total_stats,
+            "alerts": total_alerts,
+            "safe":  (total_alerts+total_flows+total_stats) - total_alerts
+        }
 
-        return  [total_alerts, total_flows, total_stats, total_logs]
+        return  total_logs
+
+    def get_paginated_data(self, table, page, per_page):
+        offset = (page - 1) * per_page
+        query = f"SELECT * FROM {table} LIMIT ? OFFSET ?"
+        return self.cursor.execute(query, (per_page, offset)).fetchall()
+
+    def get_logs_data(self):
+        # alert_log_query = self.cursor.execute("SELECT * FROM alerts")
+        # alerts = alert_log_query.fetchall()
+        # # # print(alerts[1])
+        # #
+        # flow_log_query = self.cursor.execute("SELECT * FROM flows")
+        # flows = flow_log_query.fetchall()
+        # # print(flows[0])
+        #
+        # stat_log_query = self.cursor.execute("SELECT * FROM stats")
+        # stats = stat_log_query.fetchall()
+        # # print(stats[0])
+
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+
+        alerts = self.get_paginated_data("alerts", page, per_page)
+        flows = self.get_paginated_data("flows", page, per_page)
+        stats = self.get_paginated_data("stats", page, per_page)
+
+        logs = {
+            "alerts": alerts,
+            "flows": flows,
+            "stats": stats
+        }
+
+        return logs
 
 
 
-
+db = DATABASE()
+db.get_dashboard_data()
+# db.get_logs_data()

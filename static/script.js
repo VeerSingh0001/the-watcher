@@ -33,3 +33,5 @@ if (clearLogsButton)
   clearLogsButton.addEventListener('click', function () {
     logsContainer.innerHTML = ''
   })
+
+

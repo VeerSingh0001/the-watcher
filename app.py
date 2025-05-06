@@ -3,11 +3,12 @@ import signal
 import sys
 import threading
 
-# import netifaces
+import netifaces
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, send_from_directory
+from flask import Flask, render_template, jsonify, send_from_directory, request
 from flask_socketio import SocketIO
 from scapy.all import sniff
+
 
 from ids import run_suricata_live, stop_suricata_live, tail_alerts
 from databse import  DATABASE
@@ -61,6 +62,16 @@ def get_dash():
     db = DATABASE()
     logs = db.get_dashboard_data()
     return jsonify({"status": "success", "Counts": logs}), 200
+
+@app.route("/analytics", methods=["GET"])
+def ana_data():
+    db = DATABASE()  # Ensure it's an instance
+    logs = db.get_logs_data()
+    return jsonify({'status': "success", "data": logs}), 200
+    # db = DATABASE()
+    # logs = db.get_logs_data()
+    # print(logs)
+    # return jsonify(({'status':"success", "data":{}})),200
 
 @socketio.on('connect')
 def handle_connect():
