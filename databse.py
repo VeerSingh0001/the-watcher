@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from datetime import datetime, timedelta
 
 from flask import request
 
@@ -1362,6 +1363,21 @@ class DATABASE:
         unique_sig_sev = [{json.loads(sig_sev)[0]:counts} for sig_sev,counts in unique_sig_sev_query.fetchall()]
         # print(unique_sig_sev)
 
+        now = datetime.now()
+        hours = [(now - timedelta(hours=i)).strftime("%H:00") for i in reversed(range(24))]
+        start_time = (now - timedelta(hours=23)).replace(minute=0, second=0, microsecond=0)
+        start_time_str = start_time.strftime("%Y-%m-%dT%H:%M:%S")
+        timestamp_query =self.cursor.execute( """
+            SELECT strftime('%H:00', substr(timestamp, 12, 5)) as hour, COUNT(*)
+            FROM alerts
+            WHERE substr(timestamp, 1, 19) >= ?
+            GROUP BY hour
+            """, (start_time_str,))
+        timestamp = dict(timestamp_query.fetchall())
+
+        hourly_counts = {hour: timestamp.get(hour, 0) for hour in hours}
+        # print(hourly_counts)
+
         total_logs = {
             "Counts": {
                 "total": total_alerts + total_flows + total_stats,
@@ -1371,7 +1387,8 @@ class DATABASE:
             "severity_count":unique_severity,
             "alert_cat_count": unique_alert_cat,
             "alert_sig_count":unique_alert_sig,
-            "signature_sev":unique_sig_sev
+            "signature_sev":unique_sig_sev,
+            "timestamp":hourly_counts
         }
 
         return total_logs
