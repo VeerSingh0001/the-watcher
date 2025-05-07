@@ -61,7 +61,7 @@ def index():
 def get_dash():
     db = DATABASE()
     logs = db.get_dashboard_data()
-    return jsonify({"status": "success", "Counts": logs}), 200
+    return jsonify({"status": "success", "Data": logs}), 200
 
 @app.route("/analytics", methods=["GET"])
 def ana_data():

@@ -1,6 +1,6 @@
 import json
 import sqlite3
-import  pandas as pd
+
 from flask import request
 
 
@@ -12,7 +12,7 @@ class DATABASE:
 
     def __init__(self):
         self.conn = sqlite3.connect("logs.db", check_same_thread=False)
-        self.conn.row_factory = dict_factory
+        # self.conn.row_factory = dict_factory
         self.cursor = self.conn.cursor()
         self.create_alert_conn()
         self.create_flow_conn()
@@ -1327,26 +1327,54 @@ class DATABASE:
 
     def get_dashboard_data(self):
         alerts_query = self.cursor.execute("SELECT COUNT(*) FROM alerts")
-        total_alerts = alerts_query.fetchone()["COUNT(*)"]
+        total_alerts = alerts_query.fetchone()[0]
         # print(total_alerts)
 
         flow_query = "SELECT COUNT(*) FROM flows"
         self.cursor.execute(flow_query)
-        total_flows = self.cursor.fetchone()["COUNT(*)"]
+        total_flows = self.cursor.fetchone()[0]
         # print(total_flows)
 
         stats_query = "SELECT COUNT(*) FROM stats"
         self.cursor.execute(stats_query)
-        total_stats = self.cursor.fetchone()["COUNT(*)"]
+        total_stats = self.cursor.fetchone()[0]
         # print(total_stats)
 
+        # unique_ips_query = self.cursor.execute('SELECT DISTINCT src_ip FROM alerts')
+        unique_ips_query = self.cursor.execute("SELECT src_ip, COUNT(*) FROM alerts GROUP BY src_ip")
+        unique_ips = [{ip: counts} for ip, counts in unique_ips_query.fetchall()]
+        # unique_ips = [{ip: counts} for ip, counts in unique_ips_query.fetchall()]
+        # print(unique_ips)
+
+        unique_severity_query = self.cursor.execute("SELECT alert_severity, COUNT(*) FROM alerts GROUP BY alert_severity")
+        unique_severity = [{severity: counts} for severity, counts in unique_severity_query.fetchall()]
+        #         print(unique_severity)
+
+        unique_alert_cat_query = self.cursor.execute('SELECT alert_category, COUNT(*) FROM alerts GROUP BY alert_category')
+        unique_alert_cat = [{alert_cat:counts} for alert_cat,counts in unique_alert_cat_query.fetchall()]
+        # print(unique_severity)
+
+        unique_alert_sig_query = self.cursor.execute('SELECT alert_signature, COUNT(*) FROM alerts GROUP BY alert_signature')
+        unique_alert_sig = [{alert_sig:counts} for alert_sig,counts in unique_alert_sig_query.fetchall()]
+        # print(unique_alert_sig)
+
+        unique_sig_sev_query = self.cursor.execute('SELECT metadata_signature_severity, COUNT(*) FROM alerts GROUP BY metadata_signature_severity')
+        unique_sig_sev = [{json.loads(sig_sev)[0]:counts} for sig_sev,counts in unique_sig_sev_query.fetchall()]
+        # print(unique_sig_sev)
+
         total_logs = {
-            "total": total_alerts+total_flows+total_stats,
-            "alerts": total_alerts,
-            "safe":  (total_alerts+total_flows+total_stats) - total_alerts
+            "Counts": {
+                "total": total_alerts + total_flows + total_stats,
+                "alerts": total_alerts,
+                "safe": (total_alerts + total_flows + total_stats) - total_alerts},
+            "ip_counts": unique_ips,
+            "severity_count":unique_severity,
+            "alert_cat_count": unique_alert_cat,
+            "alert_sig_count":unique_alert_sig,
+            "signature_sev":unique_sig_sev
         }
 
-        return  total_logs
+        return total_logs
 
     def get_paginated_data(self, table, page, per_page):
         offset = (page - 1) * per_page
@@ -1380,7 +1408,6 @@ class DATABASE:
         }
 
         return logs
-
 
 
 db = DATABASE()
