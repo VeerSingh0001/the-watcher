@@ -8,14 +8,20 @@ export default function LogTable() {
               <thead className="bg-gray-700 sticky top-0 z-10">
                 <tr>
                   {[
-                    "Name",
-                    "Role",
-                    "Department",
-                    "Status",
-                    "Email",
-                    "Phone",
-                    "Location",
-                    "Actions",
+                    "TimeStamp",
+                    "Source",
+                    "Destiniation",
+                    "Source Port",
+                    "Destination Port",
+                    "Protocol",
+                    // "Severity",
+                    // "Direction",
+
+                    // "Bytes to Server",
+                    // "Bytes to Client",
+                    // "Flow Alert"
+
+                    
                   ].map((header) => (
                     <th
                       key={header}
