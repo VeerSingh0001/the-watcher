@@ -13,7 +13,7 @@ class DATABASE:
 
     def __init__(self):
         self.conn = sqlite3.connect("logs.db", check_same_thread=False)
-        # self.conn.row_factory = dict_factory
+        self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         self.create_alert_conn()
         self.create_flow_conn()
@@ -1396,20 +1396,12 @@ class DATABASE:
     def get_paginated_data(self, table, page, per_page):
         offset = (page - 1) * per_page
         query = f"SELECT * FROM {table} LIMIT ? OFFSET ?"
-        return self.cursor.execute(query, (per_page, offset)).fetchall()
+        self.cursor.execute(query, (per_page, offset))
+        rows = self.cursor.fetchall()
+        return [dict(row) for row in rows]
 
     def get_logs_data(self):
-        # alert_log_query = self.cursor.execute("SELECT * FROM alerts")
-        # alerts = alert_log_query.fetchall()
-        # # # print(alerts[1])
-        # #
-        # flow_log_query = self.cursor.execute("SELECT * FROM flows")
-        # flows = flow_log_query.fetchall()
-        # # print(flows[0])
-        #
-        # stat_log_query = self.cursor.execute("SELECT * FROM stats")
-        # stats = stat_log_query.fetchall()
-        # # print(stats[0])
+
 
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 50))
