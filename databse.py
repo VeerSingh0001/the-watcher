@@ -1,11 +1,19 @@
 import json
 import sqlite3
+from datetime import datetime, timedelta
+
+from flask import request
+
+
+def dict_factory(cursor, row):
+    return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
 
 
 class DATABASE:
 
     def __init__(self):
         self.conn = sqlite3.connect("logs.db", check_same_thread=False)
+        self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         self.create_alert_conn()
         self.create_flow_conn()
@@ -214,7 +222,6 @@ class DATABASE:
         self.cursor.execute(insert_query, params)
 
         self.conn.commit()
-
 
     def create_flow_conn(self):
         self.cursor.execute("""
@@ -1319,27 +1326,99 @@ class DATABASE:
         self.cursor.execute(insert_query)
         self.conn.commit()
 
-
     def get_dashboard_data(self):
-        alerts_query = "SELECT COUNT(*) FROM alerts"
-        self.cursor.execute(alerts_query)
-        total_alerts = self.cursor.fetchone()[0]
-        print(total_alerts)
+        alerts_query = self.cursor.execute("SELECT COUNT(*) FROM alerts")
+        total_alerts = alerts_query.fetchone()[0]
+        # print(total_alerts)
 
         flow_query = "SELECT COUNT(*) FROM flows"
         self.cursor.execute(flow_query)
         total_flows = self.cursor.fetchone()[0]
-        print(total_flows)
+        # print(total_flows)
 
         stats_query = "SELECT COUNT(*) FROM stats"
         self.cursor.execute(stats_query)
         total_stats = self.cursor.fetchone()[0]
-        print(total_stats)
+        # print(total_stats)
 
-        total_logs = total_alerts + total_flows + total_stats
+        # unique_ips_query = self.cursor.execute('SELECT DISTINCT src_ip FROM alerts')
+        unique_ips_query = self.cursor.execute("SELECT src_ip, COUNT(*) FROM alerts GROUP BY src_ip")
+        unique_ips = [{ip: counts} for ip, counts in unique_ips_query.fetchall()]
+        # unique_ips = [{ip: counts} for ip, counts in unique_ips_query.fetchall()]
+        # print(unique_ips)
 
-        return  [total_alerts, total_flows, total_stats, total_logs]
+        unique_severity_query = self.cursor.execute("SELECT alert_severity, COUNT(*) FROM alerts GROUP BY alert_severity")
+        unique_severity = [{severity: counts} for severity, counts in unique_severity_query.fetchall()]
+        #         print(unique_severity)
+
+        unique_alert_cat_query = self.cursor.execute('SELECT alert_category, COUNT(*) FROM alerts GROUP BY alert_category')
+        unique_alert_cat = [{alert_cat:counts} for alert_cat,counts in unique_alert_cat_query.fetchall()]
+        # print(unique_severity)
+
+        unique_alert_sig_query = self.cursor.execute('SELECT alert_signature, COUNT(*) FROM alerts GROUP BY alert_signature')
+        unique_alert_sig = [{alert_sig:counts} for alert_sig,counts in unique_alert_sig_query.fetchall()]
+        # print(unique_alert_sig)
+
+        unique_sig_sev_query = self.cursor.execute('SELECT metadata_signature_severity, COUNT(*) FROM alerts GROUP BY metadata_signature_severity')
+        unique_sig_sev = [{json.loads(sig_sev)[0]:counts} for sig_sev,counts in unique_sig_sev_query.fetchall()]
+        # print(unique_sig_sev)
+
+        now = datetime.now()
+        hours = [(now - timedelta(hours=i)).strftime("%H:00") for i in reversed(range(24))]
+        start_time = (now - timedelta(hours=23)).replace(minute=0, second=0, microsecond=0)
+        start_time_str = start_time.strftime("%Y-%m-%dT%H:%M:%S")
+        timestamp_query =self.cursor.execute( """
+            SELECT strftime('%H:00', substr(timestamp, 12, 5)) as hour, COUNT(*)
+            FROM alerts
+            WHERE substr(timestamp, 1, 19) >= ?
+            GROUP BY hour
+            """, (start_time_str,))
+        timestamp = dict(timestamp_query.fetchall())
+
+        hourly_counts = {hour: timestamp.get(hour, 0) for hour in hours}
+        # print(hourly_counts)
+
+        total_logs = {
+            "Counts": {
+                "total": total_alerts + total_flows + total_stats,
+                "alerts": total_alerts,
+                "safe": (total_alerts + total_flows + total_stats) - total_alerts},
+            "ip_counts": unique_ips,
+            "severity_count":unique_severity,
+            "alert_cat_count": unique_alert_cat,
+            "alert_sig_count":unique_alert_sig,
+            "signature_sev":unique_sig_sev,
+            "timestamp":hourly_counts
+        }
+
+        return total_logs
+
+    def get_paginated_data(self, table, page, per_page):
+        offset = (page - 1) * per_page
+        query = f"SELECT * FROM {table} LIMIT ? OFFSET ?"
+        self.cursor.execute(query, (per_page, offset))
+        rows = self.cursor.fetchall()
+        return [dict(row) for row in rows]
+
+    def get_logs_data(self):
 
 
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 50))
+
+        alerts = self.get_paginated_data("alerts", page, per_page)
+        flows = self.get_paginated_data("flows", page, per_page)
+        stats = self.get_paginated_data("stats", page, per_page)
+
+        logs = {
+            "alerts": alerts,
+            "flows": flows,
+            "stats": stats
+        }
+
+        return logs
 
 
+db = DATABASE()
+db.get_dashboard_data()
+# db.get_logs_data()

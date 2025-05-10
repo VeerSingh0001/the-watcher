@@ -3,7 +3,7 @@ import { useData } from "../contexts/DataContext";
 export default function BoxPreview() {
   const { totalPackets, alerts, vaild } = useData();
   return (
-    <div className="bg-gray-900 w-80 p-2">
+    <div className="w-80 p-2">
       <div className="py-2 text-center">
         <h4 className="font-bold text-base">Total</h4>
         <p className="text-2xl p-2">{totalPackets}</p>
