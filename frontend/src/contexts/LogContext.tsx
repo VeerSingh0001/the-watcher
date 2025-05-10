@@ -13,9 +13,9 @@ interface TypeLogContext {
 interface TypeData {
   id: number;
   src_ip: string;
-  src_port: number;
+  src_port: number | null;
   dest_ip: string;
-  dest_port: string;
+  dest_port: string | null;
   timestamp: string;
   proto: string;
   alert_category: string;

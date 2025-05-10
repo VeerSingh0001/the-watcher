@@ -36,9 +36,9 @@ export default function LogTable() {
                 <tr key={i} className="border-b border-gray-700">
                   <td className="py-2 px-4">{log.timestamp}</td>
                   <td className="py-2 px-4">{log.src_ip}</td>
-                  <td className="py-2 px-4">{log.src_port}</td>
+                  <td className="py-2 px-4">{log.src_port || 80}</td>
                   <td className="py-2 px-4">{log.dest_ip}</td>
-                  <td className="py-2 px-4">{log.dest_port}</td>
+                  <td className="py-2 px-4">{log.dest_port || 80}</td>
                   <td className="py-2 px-4">{log.proto}</td>
                   {category === "alerts" && (
                     <>
