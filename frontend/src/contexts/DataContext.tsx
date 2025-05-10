@@ -48,7 +48,7 @@ export default function DataProvider(props: Readonly<Props>) {
     async function loadDashboardData() {
       setIsLoading(true);
       try {
-        const response = await axios.get("http://localhost:5000/dashboard");
+        const response = await axios.get("http://localhost:5000/api/dashboard");
 
         if (response.status !== 200) throw new Error("something wen't wrong");
 

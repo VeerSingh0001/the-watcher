@@ -5,12 +5,15 @@ import "remixicon/fonts/remixicon.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router-dom";
 import DataProvider from "./contexts/DataContext.tsx";
+import LogProvider from "./contexts/LogContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <DataProvider>
-        <App />
+        <LogProvider>
+          <App />
+        </LogProvider>
       </DataProvider>
     </BrowserRouter>
   </StrictMode>

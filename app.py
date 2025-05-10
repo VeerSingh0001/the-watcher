@@ -57,13 +57,13 @@ def serve_index():
 def serve_static(path):
     return send_from_directory(app.static_folder, path)
 
-@app.route("/dashboard", methods=["GET"])
+@app.route("/api/dashboard", methods=["GET"])
 def get_dash():
     db = DATABASE()
     logs = db.get_dashboard_data()
     return jsonify({"status": "success", "Data": logs}), 200
 
-@app.route("/analytics", methods=["GET"])
+@app.route("/api/analytics", methods=["GET"])
 def ana_data():
     db = DATABASE()  # Ensure it's an instance
     logs = db.get_logs_data()

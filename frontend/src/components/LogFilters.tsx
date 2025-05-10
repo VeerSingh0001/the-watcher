@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useLogs } from "../contexts/LogContext";
 
 export default function LogFilters() {
-  const categories = ["all", "alerts", "flows", "stats"];
+  const categories = ["alerts", "flows"];
   const [isHide, setIsHide] = useState(true);
-  const [category, setCategory] = useState("all");
+  const { category, setCategory } = useLogs();
   return (
     <div className="w-50">
       <button
@@ -41,7 +42,7 @@ export default function LogFilters() {
             {categories.map((category) => (
               <li
                 onClick={() => {
-                  setCategory(category);
+                  setCategory ? setCategory(category! as any) : "";
                   setIsHide(true);
                 }}
                 key={category}

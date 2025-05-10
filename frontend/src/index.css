@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+
+html {
+  font-size: 14.5px;
+}
+
 body {
   background: var(--color-gray-800);
   color: var(--color-white);

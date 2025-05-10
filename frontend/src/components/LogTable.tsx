@@ -1,90 +1,84 @@
+import { useLogs } from "../contexts/LogContext";
+
 export default function LogTable() {
+  const { data: logs, category, loadMore } = useLogs();
+
   return (
-    <div className="w-full text-white">
-      <div className="overflow-x-auto m-10 rounded-lg shadow-lg">
-        <div className="inline-block min-w-full">
-          <div className="overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-700 bg-gray-800">
-              <thead className="bg-gray-700 sticky top-0 z-10">
-                <tr>
-                  {[
-                    "TimeStamp",
-                    "Source",
-                    "Destiniation",
-                    "Source Port",
-                    "Destination Port",
-                    "Protocol",
-                    // "Severity",
-                    // "Direction",
-
-                    // "Bytes to Server",
-                    // "Bytes to Client",
-                    // "Flow Alert"
-
-                    
-                  ].map((header) => (
-                    <th
-                      key={header}
-                      className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-300"
-                    >
-                      {header}
-                    </th>
-                  ))}
+    <div className="mx-auto mt-10">
+      <div className="overflow-y-auto max-h-150 shadow-lg rounded-lg border border-gray-700">
+        <table className="min-w-full bg-gray-900 text-gray-200">
+          <thead className="sticky top-0 bg-gray-800">
+            <tr>
+              <th className="py-2 px-4 text-left">Timestamp</th>
+              <th className="py-2 px-4 text-left">Source</th>
+              <th className="py-2 px-4 text-left">Source Port</th>
+              <th className="py-2 px-4 text-left">Destination</th>
+              <th className="py-2 px-4 text-left">Destination Port</th>
+              <th className="py-2 px-4 text-left">Protocol</th>
+              {category === "alerts" && (
+                <>
+                  <th className="py-2 px-4 text-left">Category</th>
+                  <th className="py-2 px-4 text-left">Severity</th>
+                </>
+              )}
+              {category === "flows" && (
+                <>
+                  <th className="py-2 px-4 text-left">Flow Start</th>
+                  <th className="py-2 px-4 text-left">Flow End</th>
+                  <th className="py-2 px-4 text-left">Is Safe</th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {logs &&
+              logs.map((log, i) => (
+                <tr key={i} className="border-b border-gray-700">
+                  <td className="py-2 px-4">{log.timestamp}</td>
+                  <td className="py-2 px-4">{log.src_ip}</td>
+                  <td className="py-2 px-4">{log.src_port}</td>
+                  <td className="py-2 px-4">{log.dest_ip}</td>
+                  <td className="py-2 px-4">{log.dest_port}</td>
+                  <td className="py-2 px-4">{log.proto}</td>
+                  {category === "alerts" && (
+                    <>
+                      <td className="py-2 px-4">{log.alert_category}</td>
+                      <td className="py-2 px-4">
+                        <SeverityLog value={log.alert_severity} />
+                      </td>
+                    </>
+                  )}
+                  {category === "flows" && (
+                    <>
+                      <td className="py-2 px-4">{log.flow_start}</td>
+                      <td className="py-2 px-4">{log.flow_end}</td>
+                      <td className="py-2 px-4">
+                        {log.flow_alerted === "1" ? "🚨" : "✅"}
+                      </td>
+                    </>
+                  )}
                 </tr>
-              </thead>
-            </table>
-            <div className="overflow-y-auto h-140 ">
-              <table className="min-w-full divide-y divide-gray-700 bg-gray-800">
-                <tbody className="divide-y divide-gray-700">
-                  {Array.from({ length: 30 }, (_, index) => (
-                    <tr key={index} className="hover:bg-gray-700">
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        User {index + 1}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        Role {index + 1}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        Dept {index + 1}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-green-400">
-                        Active
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        user{index + 1}@email.com
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        +1234567890
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        City {index + 1}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
-                        <a
-                          href="#"
-                          className="text-indigo-400 hover:text-indigo-300"
-                        >
-                          Edit
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+              ))}
+          </tbody>
+        </table>
+        <button
+          onClick={() => loadMore && loadMore()}
+          className="w-full text-center bg-gray-900 cursor-pointer hover:bg-gray-800"
+        >
+          Load More
+        </button>
       </div>
     </div>
   );
 }
 
-export function Row({
-  children,
-  isTitle,
-}: {
-  children: React.ReactNode;
-  isTitle?: boolean;
-}) {
-  return <div className={`row ${isTitle ? "title" : ""} flex`}>{children}</div>;
+function SeverityLog({ value }: { value: number }) {
+  const color =
+    value === 1 ? "bg-green-600" : value === 2 ? "bg-yellow-500" : "bg-red-600";
+
+  return (
+    <p className={`${color} text-black font-bold text-center rounded-2xl`}>
+      {value}
+    </p>
+  );
 }
