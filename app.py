@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, send_from_directory, request
 from flask_socketio import SocketIO
 from scapy.all import sniff
+from flask_cors import CORS
 
 
 from ids import run_suricata_live, stop_suricata_live, tail_alerts
@@ -17,7 +18,8 @@ from databse import  DATABASE
 load_dotenv()
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public')
+CORS(app)  # This enables CORS for all routes and origins
 # app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 socketio = SocketIO(app, cors_allowed_origins='*')
 
@@ -47,23 +49,21 @@ def start_sniffing(interface=None):
     sniff(iface=interface, prn=handle_received_packet, store=False)
 
 
-@app.route('/<path:filename>')
-def public_files(filename):
-    print(filename)
-    return send_from_directory('public', filename)
-
 @app.route('/')
-def index():
-    # Render the main page
-    return render_template('index.html')
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
 
-@app.route("/dashboard", methods=["GET"])
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory(app.static_folder, path)
+
+@app.route("/api/dashboard", methods=["GET"])
 def get_dash():
     db = DATABASE()
     logs = db.get_dashboard_data()
     return jsonify({"status": "success", "Data": logs}), 200
 
-@app.route("/analytics", methods=["GET"])
+@app.route("/api/analytics", methods=["GET"])
 def ana_data():
     db = DATABASE()  # Ensure it's an instance
     logs = db.get_logs_data()
