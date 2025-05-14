@@ -1341,11 +1341,8 @@ class DATABASE:
         total_stats = self.cursor.fetchone()[0]
         # print(total_stats)
 
-        # unique_ips_query = self.cursor.execute('SELECT DISTINCT src_ip FROM alerts')
         unique_ips_query = self.cursor.execute("SELECT src_ip, COUNT(*) FROM alerts GROUP BY src_ip")
         unique_ips = [{ip: counts} for ip, counts in unique_ips_query.fetchall()]
-        # unique_ips = [{ip: counts} for ip, counts in unique_ips_query.fetchall()]
-        # print(unique_ips)
 
         unique_severity_query = self.cursor.execute("SELECT alert_severity, COUNT(*) FROM alerts GROUP BY alert_severity")
         unique_severity = [{severity: counts} for severity, counts in unique_severity_query.fetchall()]
@@ -1391,6 +1388,8 @@ class DATABASE:
             "timestamp":hourly_counts
         }
 
+        print(total_logs["ip_counts"])
+
         return total_logs
 
     def get_paginated_data(self, table, page, per_page):
@@ -1401,7 +1400,6 @@ class DATABASE:
         return [dict(row) for row in rows]
 
     def get_logs_data(self):
-
 
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 50))
@@ -1418,7 +1416,3 @@ class DATABASE:
 
         return logs
 
-
-db = DATABASE()
-db.get_dashboard_data()
-# db.get_logs_data()

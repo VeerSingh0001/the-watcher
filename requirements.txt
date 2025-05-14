@@ -1,8 +1,9 @@
-Flask
-scapy
+Flask~=3.1.0
+scapy~=2.6.1
 flask-wtf
-netifaces
-python-dotenv
-flask-socketio
+netifaces~=0.11.0
+python-dotenv~=1.1.0
+flask-socketio~=5.5.1
 python-json-logger
 idstools
+flask-cors~=5.0.1

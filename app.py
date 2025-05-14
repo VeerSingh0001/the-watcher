@@ -5,7 +5,7 @@ import threading
 
 import netifaces
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, send_from_directory, request
+from flask import Flask, jsonify, send_from_directory
 from flask_socketio import SocketIO
 from scapy.all import sniff
 from flask_cors import CORS
@@ -68,10 +68,6 @@ def ana_data():
     db = DATABASE()  # Ensure it's an instance
     logs = db.get_logs_data()
     return jsonify({'status': "success", "data": logs}), 200
-    # db = DATABASE()
-    # logs = db.get_logs_data()
-    # print(logs)
-    # return jsonify(({'status':"success", "data":{}})),200
 
 @socketio.on('connect')
 def handle_connect():
@@ -89,8 +85,7 @@ def handle_connect():
 def on_exit():
     print("Flask app is closing...")
     stop_suricata_live()
-    # db.conn.close()
-    # db.cursor.close()
+
 
 
 # Register the exit function using at exit.
@@ -101,8 +96,7 @@ atexit.register(on_exit)
 def signal_handler(sig, frame):
     print("Signal received, closing Flask app...")
     stop_suricata_live()
-    # db.conn.close()
-    # db.cursor.close()
+
     sys.exit(0)  # Exiting will trigger the at exit functions
 
 
@@ -112,6 +106,5 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 if __name__ == '__main__':
     # Run Flask app
-    # db = DATABASE()
-    # db.create_conn()
+
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
