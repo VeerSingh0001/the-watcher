@@ -16,7 +16,7 @@ interface Props {
 
 export default function HorBar(props: Readonly<Props>) {
   return (
-    <div style={{ width: "100%", height: 300 }}>
+    <div style={{ width: "100%", height: 420 }}>
       <h2 className="text-center">{props.title}</h2>
       <ResponsiveContainer>
         <BarChart

@@ -5,7 +5,7 @@ export default function LogTable() {
 
   return (
     <div className="mx-auto mt-10">
-      <div className="overflow-y-auto max-h-150 shadow-lg rounded-lg border border-gray-700">
+      <div className="overflow-y-auto max-h-180 shadow-lg rounded-lg border border-gray-700">
         <table className="min-w-full bg-gray-900 text-gray-200">
           <thead className="sticky top-0 bg-gray-800">
             <tr>

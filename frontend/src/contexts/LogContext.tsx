@@ -58,9 +58,6 @@ export default function LogProvider({
         const response = await axios.get(
           `http://localhost:5000/api/analytics?page=${currentPage}&per_page=50`
         );
-
-        console.log(response.data.data[category]);
-
         setData((current) =>
           current
             ? [...current, ...response.data.data[category]]
