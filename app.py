@@ -1,11 +1,13 @@
 import atexit
+import json
 import signal
 import sys
 import threading
+from collections import OrderedDict
 
 import netifaces
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, Response
 from flask_socketio import SocketIO
 from scapy.all import sniff
 from flask_cors import CORS
@@ -19,6 +21,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='public')
+app.config['JSON_SORT_KEYS'] = False
 CORS(app)  # This enables CORS for all routes and origins
 # app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 socketio = SocketIO(app, cors_allowed_origins='*')
@@ -61,7 +64,17 @@ def serve_static(path):
 def get_dash():
     db = DATABASE()
     logs = db.get_dashboard_data()
-    return jsonify({"status": "success", "Data": logs}), 200
+    # Assuming logs['timestamp'] is a dictionary, convert it to an OrderedDict
+    # if you want to ensure the insertion order is kept.
+    ordered_timestamp = OrderedDict(logs['timestamp'])
+
+    # Directly assign the OrderedDict to the logs so it remains as an object when serialized.
+    logs['timestamp'] = ordered_timestamp
+
+    # Use json.dumps with sort_keys=False to prevent any reordering,
+    # then return a Response with application/json mimetype.
+    response_json = json.dumps({"status": "success", "Data": logs}, sort_keys=False)
+    return Response(response=response_json, status=200, mimetype='application/json')
 
 @app.route("/api/analytics", methods=["GET"])
 def ana_data():
@@ -70,20 +83,15 @@ def ana_data():
     return jsonify({'status': "success", "data": logs}), 200
 
 def on_start():
-    # Handle WebSocket connection
-    print('[INFO] Client connected')
     sniff_thread = threading.Thread(target=start_sniffing, daemon=True)
     sniff_thread.start()
-    print("sniffing started")
     run_ids = threading.Thread(target=run_suricata_live, daemon=True)
     run_ids.start()
-    print("Suricata Started")
     tail_alert = threading.Thread(target=tail_alerts, daemon=True)
     tail_alert.start()
-    print("Alert started")
 
 
-# Function to print something on exit
+
 def on_exit():
     print("Flask app is closing...")
     stop_suricata_live()
@@ -109,5 +117,4 @@ signal.signal(signal.SIGTERM, signal_handler)
 if __name__ == '__main__':
     # Run Flask app
     on_start()
-    # socketio.run(app, host='0.0.0.0', port=5000, debug=True)
     app.run(host="0.0.0.0", port=5000,debug=True)
