@@ -56,13 +56,13 @@ def tail_alerts(log_file="/var/log/suricata/eve.json"):
                     db = DATABASE()
                     db.create_stat_conn()
                     db.insert_stat(log)
-                    print(log)
+                    # print(log)
 
                 if log.get("event_type") == "flow":
                     db = DATABASE()
                     db.create_flow_conn()
                     db.insert_flow(log)
-                    print(log)
+                    # print(log)
 
             except json.JSONDecodeError as e:
                 print(e)

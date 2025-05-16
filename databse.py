@@ -1388,7 +1388,6 @@ class DATABASE:
             "timestamp":hourly_counts
         }
 
-        print(total_logs["ip_counts"])
 
         return total_logs
 

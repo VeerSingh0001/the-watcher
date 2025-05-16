@@ -65,20 +65,22 @@ def get_dash():
 
 @app.route("/api/analytics", methods=["GET"])
 def ana_data():
-    db = DATABASE()  # Ensure it's an instance
+    db = DATABASE()
     logs = db.get_logs_data()
     return jsonify({'status': "success", "data": logs}), 200
 
-@socketio.on('connect')
-def handle_connect():
+def on_start():
     # Handle WebSocket connection
     print('[INFO] Client connected')
     sniff_thread = threading.Thread(target=start_sniffing, daemon=True)
     sniff_thread.start()
+    print("sniffing started")
     run_ids = threading.Thread(target=run_suricata_live, daemon=True)
     run_ids.start()
+    print("Suricata Started")
     tail_alert = threading.Thread(target=tail_alerts, daemon=True)
     tail_alert.start()
+    print("Alert started")
 
 
 # Function to print something on exit
@@ -106,5 +108,6 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 if __name__ == '__main__':
     # Run Flask app
-
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    on_start()
+    # socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000,debug=True)
